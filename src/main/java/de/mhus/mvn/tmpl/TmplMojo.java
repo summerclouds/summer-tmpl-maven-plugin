@@ -21,9 +21,11 @@ import org.codehaus.plexus.util.FileUtils;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 
+import de.mhus.lib.core.MApi;
 import de.mhus.lib.core.MFile;
 import de.mhus.lib.core.MString;
 import de.mhus.lib.core.logging.Log;
+import de.mhus.lib.core.mapi.IApiInternal;
 
 @Mojo(
         name = "tmpl",
@@ -33,7 +35,10 @@ import de.mhus.lib.core.logging.Log;
         threadSafe = true)
 public class TmplMojo extends AbstractMojo {
 
-	private Log log = new MavenPluginLog(this);
+	{
+		((IApiInternal)MApi.get()).setLogFactory(new MavenPloginLogFactory(this));
+	}
+	private Log log = Log.getLog(TmplMojo.class);
 
 	@Parameter
 	public String filePrefix = "";
@@ -78,7 +83,7 @@ public class TmplMojo extends AbstractMojo {
         
     	for (File file : list) {
     		if (file.getPath().contains("/.")) continue;
-    		log.i("scan",file);
+    		log.d("scan",file);
     		String name = MFile.getFileNameOnly(file.getName());
     		if (name.startsWith(filePrefix) && name.endsWith(fileSuffix))
     			tmplFile(file,name.substring(filePrefix.length(), name.length() - fileSuffix.length()) + "." + MFile.getFileExtension(file));

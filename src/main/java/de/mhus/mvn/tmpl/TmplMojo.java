@@ -33,7 +33,7 @@ import de.mhus.lib.core.logging.Log;
         threadSafe = true)
 public class TmplMojo extends AbstractMojo {
 
-	private static Log log = Log.getLog(TmplMojo.class);
+	private Log log = new MavenPluginLog(this);
 
 	@Parameter
 	public String filePrefix = "";

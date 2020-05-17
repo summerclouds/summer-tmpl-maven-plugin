@@ -1,4 +1,4 @@
-
+----
 			<plugin>
 			    <groupId>de.mhus.mvn.plugin</groupId>
 				<version>{{project_version}}</version>
@@ -15,3 +15,5 @@
 
 			
 mvn de.mhus.mvn.plugin:tmpl-maven-plugin:{{project_version}}:tmpl 
+
+----

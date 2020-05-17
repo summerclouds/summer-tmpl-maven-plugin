@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.model.FileSet;
 import org.apache.maven.plugin.AbstractMojo;
@@ -21,6 +22,7 @@ import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 
 import de.mhus.lib.core.MFile;
+import de.mhus.lib.core.MString;
 import de.mhus.lib.core.logging.Log;
 
 @Mojo(
@@ -60,10 +62,17 @@ public class TmplMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
     	
-		project.getProperties().forEach((k,v) -> parameters.put(String.valueOf(k).replace('.','_'), v));
-		parameters.put("project_version", project.getVersion());
-		parameters.put("project_groupId", project.getGroupId());
-		parameters.put("project_artifact", project.getArtifactId());
+		project.getProperties().forEach((k,v) -> putParameter(k,v));
+		putParameter("project.version", project.getVersion());
+		putParameter("project.groupId", project.getGroupId());
+		putParameter("project.artifact", project.getArtifactId());
+		putParameter("project.name", project.getName());
+		putParameter("basedir", project.getBasedir());
+		if (project.getParent() != null) {
+			putParameter("parent.version", project.getParent().getVersion());
+			putParameter("parent.groupId", project.getParent().getGroupId());
+			putParameter("parent.artifact", project.getParent().getArtifactId());
+		}
 
     	List<File> list = toFileList(files);
         
@@ -76,6 +85,35 @@ public class TmplMojo extends AbstractMojo {
     	}
     	
     }
+
+	private void putParameter(Object k, Object v) {
+		String key = String.valueOf(k);
+		Map<String, Object> cont = parameters;
+		if (key.contains(".")) {
+			String path = MString.beforeLastIndex(key, '.');
+			cont = getParamContainer(cont, path);
+			key = MString.afterLastIndex(key, '.');
+		}
+		cont.put(key, v);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> getParamContainer(Map<String, Object> parent, String key) {
+		Map<String, Object> cont = null;
+		if (key.contains(".")) {
+			String path = MString.beforeLastIndex(key, '.');
+			cont = getParamContainer(parent, path);
+			key = MString.afterLastIndex(key, '.');
+		} else {
+			cont = (Map<String, Object>) parent.get(key);
+			if (cont == null) {
+				cont = new HashMap<>();
+				parent.put(key, cont);
+			}
+		}
+		
+		return cont;
+	}
 
 	private void tmplFile(File from, String to) {
 		try {

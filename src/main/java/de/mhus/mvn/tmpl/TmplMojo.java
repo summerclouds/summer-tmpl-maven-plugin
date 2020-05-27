@@ -66,16 +66,13 @@ public class TmplMojo extends AbstractMojo {
     @Parameter(required = true)
     private FileSet files;
 
-    /**
-     * List of files to exclude. Specified as fileset patterns which are relative to the input
-     * directory whose contents is being parsed.
-     */
-    @Parameter private String[] excludes = new String[] {};
-
     @Parameter(defaultValue = "${project}")
     protected MavenProject project;
 
     HashMap<String, Object> parameters = new HashMap<>();
+
+    @Parameter(property = "aggregate", defaultValue = "false")
+    public boolean aggregate = false;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -101,9 +98,10 @@ public class TmplMojo extends AbstractMojo {
             if (name.startsWith(filePrefix) && name.endsWith(fileSuffix))
                 tmplFile(
                         file,
-                        name.substring(filePrefix.length(), name.length() - fileSuffix.length())
-                                + "."
-                                + MFile.getFileExtension(file));
+                        new File(file.getParent(),
+	                        name.substring(filePrefix.length(), name.length() - fileSuffix.length())
+	                                + "."
+	                                + MFile.getFileExtension(file)));
         }
     }
 
@@ -136,7 +134,7 @@ public class TmplMojo extends AbstractMojo {
         return cont;
     }
 
-    private void tmplFile(File from, String to) {
+    private void tmplFile(File from, File to) {
         try {
             log.i("Tmpl", from, to);
             JtwigTemplate jtwigTemplate = JtwigTemplate.fileTemplate(from);
@@ -158,7 +156,7 @@ public class TmplMojo extends AbstractMojo {
             if (fs.getDirectory() != null) {
                 File directory = new File(fs.getDirectory());
                 String includes = toString(fs.getIncludes());
-                String excludes = toString(fs.getExcludes());
+                String excludes = buildExcludes(fs);
                 return (List<File>) FileUtils.getFiles(directory, includes, excludes);
             } else {
                 getLog().warn(String.format("Fileset [%s] directory empty", fs.toString()));
@@ -168,6 +166,17 @@ public class TmplMojo extends AbstractMojo {
             throw new MojoExecutionException(
                     String.format("Unable to get paths to fileset [%s]", fs.toString()), e);
         }
+    }
+
+    private String buildExcludes(FileSet fs) {
+        List<String> ex = new ArrayList<String>();
+        ex.addAll(fs.getExcludes());
+        if (project != null && project.getModules() != null && !aggregate) {
+            for (String module : (List<String>) project.getModules()) {
+                ex.add(module + "/**");
+            }
+        }
+        return toString(ex);
     }
 
     private String toString(List<String> strings) {

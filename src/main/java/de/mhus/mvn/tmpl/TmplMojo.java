@@ -18,7 +18,9 @@ package de.mhus.mvn.tmpl;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +35,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
-import org.jtwig.JtwigModel;
-import org.jtwig.JtwigTemplate;
+import org.stringtemplate.v4.ST;
 
 import de.mhus.lib.core.MApi;
+import de.mhus.lib.core.MDate;
 import de.mhus.lib.core.MFile;
 import de.mhus.lib.core.MString;
 import de.mhus.lib.core.logging.Log;
+import de.mhus.lib.core.logging.Log.LEVEL;
 import de.mhus.lib.core.mapi.IApiInternal;
 
 @Mojo(
@@ -63,7 +66,7 @@ public class TmplMojo extends AbstractMojo {
      * List of files to include. Specified as fileset patterns which are relative to the input
      * directory whose contents is being parsed.
      */
-    @Parameter(required = true)
+    @Parameter
     private FileSet files;
 
     @Parameter(defaultValue = "${project}")
@@ -74,19 +77,30 @@ public class TmplMojo extends AbstractMojo {
     @Parameter(property = "aggregate", defaultValue = "false")
     public boolean aggregate = false;
 
+    @Parameter
+	private char startChar = '±';
+
+    @Parameter
+	private char endChar = '±';
+	
+	private Date now = new Date();
+
+    @Parameter
+	private String charset = Charset.defaultCharset().name();
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         project.getProperties().forEach((k, v) -> putParameter(k, v));
-        putParameter("project.version", project.getVersion());
-        putParameter("project.groupId", project.getGroupId());
-        putParameter("project.artifact", project.getArtifactId());
-        putParameter("project.name", project.getName());
-        putParameter("basedir", project.getBasedir());
+        putParameter("__project.version", project.getVersion());
+        putParameter("__project.groupId", project.getGroupId());
+        putParameter("__project.artifact", project.getArtifactId());
+        putParameter("__project.name", project.getName());
+        putParameter("__basedir", project.getBasedir());
         if (project.getParent() != null) {
-            putParameter("parent.version", project.getParent().getVersion());
-            putParameter("parent.groupId", project.getParent().getGroupId());
-            putParameter("parent.artifact", project.getParent().getArtifactId());
+            putParameter("__parent.version", project.getParent().getVersion());
+            putParameter("__parent.groupId", project.getParent().getGroupId());
+            putParameter("__parent.artifact", project.getParent().getArtifactId());
         }
 
         List<File> list = toFileList(files);
@@ -136,22 +150,33 @@ public class TmplMojo extends AbstractMojo {
 
     private void tmplFile(File from, File to) {
         try {
-            log.i("Tmpl", from, to);
-            JtwigTemplate jtwigTemplate = JtwigTemplate.fileTemplate(from);
-
-            JtwigModel jtwigModel = JtwigModel.newModel(parameters);
-
-            FileOutputStream fos = new FileOutputStream(to);
-            jtwigTemplate.render(jtwigModel, fos);
-            fos.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            log.i("TMPL", from, to);
+            ST template = new ST(MFile.readFile(from, charset), startChar , endChar );
+            parameters.forEach((k,v) -> template.add(k, v));
+            template.add("__from", from.getName());
+            template.add("__to", to.getName());
+            template.add("__datetime", MDate.toIsoDate(now));
+            template.add("__date", MDate.toIsoDateTime(now));
+            if (log.isLevelEnabled(LEVEL.DEBUG))
+            	log.d("tmpl attributes",template.getAttributes());
+            String content = template.render();
+            FileOutputStream os = new FileOutputStream(to);
+            MFile.writeFile(os, content, charset);
+            os.close();
+        } catch (Throwable e) {
+        	log.w("Failed", e.toString());
+        	if (log.isLevelEnabled(LEVEL.DEBUG))
+        		log.d("Exception", e);
         }
     }
 
     @SuppressWarnings("unchecked")
     public List<File> toFileList(FileSet fs) throws MojoExecutionException {
+    	if (fs == null) {
+    		fs = new FileSet();
+    		fs.setDirectory(project.getBasedir().getAbsolutePath());
+    		fs.addInclude("**/**");
+    	}
         try {
             if (fs.getDirectory() != null) {
                 File directory = new File(fs.getDirectory());

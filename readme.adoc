@@ -13,13 +13,13 @@
 				</configuration>
 			</plugin>
 
-			
-mvn de.mhus.mvn.plugin:tmpl-maven-plugin:±project_version±:tmpl 
+
+mvn de.mhus.mvn.plugin:tmpl-maven-plugin::tmpl 
 
 ----
 
 The mojo is using https://github.com/antlr/stringtemplate4/blob/master/doc/index.md as template engine.
 
-Default start/stop characters are '\±'
+Default start/stop characters are '±'
 
 

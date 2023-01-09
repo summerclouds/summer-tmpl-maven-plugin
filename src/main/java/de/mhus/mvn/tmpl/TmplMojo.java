@@ -92,15 +92,15 @@ public class TmplMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         project.getProperties().forEach((k, v) -> putParameter(k, v));
-        putParameter("__project.version", project.getVersion());
-        putParameter("__project.groupId", project.getGroupId());
-        putParameter("__project.artifact", project.getArtifactId());
-        putParameter("__project.name", project.getName());
-        putParameter("__basedir", project.getBasedir());
+        putParameter("project_version", project.getVersion());
+        putParameter("project_groupId", project.getGroupId());
+        putParameter("project_artifact", project.getArtifactId());
+        putParameter("project_name", project.getName());
+        putParameter("basedir", project.getBasedir());
         if (project.getParent() != null) {
-            putParameter("__parent.version", project.getParent().getVersion());
-            putParameter("__parent.groupId", project.getParent().getGroupId());
-            putParameter("__parent.artifact", project.getParent().getArtifactId());
+            putParameter("parent_version", project.getParent().getVersion());
+            putParameter("parent_groupId", project.getParent().getGroupId());
+            putParameter("parent_artifact", project.getParent().getArtifactId());
         }
 
         List<File> list = toFileList(files);
@@ -153,10 +153,10 @@ public class TmplMojo extends AbstractMojo {
             log.i("TMPL", from, to);
             ST template = new ST(MFile.readFile(from, charset), startChar , endChar );
             parameters.forEach((k,v) -> template.add(k, v));
-            template.add("__from", from.getName());
-            template.add("__to", to.getName());
-            template.add("__datetime", MDate.toIsoDate(now));
-            template.add("__date", MDate.toIsoDateTime(now));
+            template.add("from_name", from.getName());
+            template.add("to_name", to.getName());
+            template.add("now_datetime", MDate.toIsoDate(now));
+            template.add("now_date", MDate.toIsoDateTime(now));
             if (log.isLevelEnabled(LEVEL.DEBUG))
             	log.d("tmpl attributes",template.getAttributes());
             String content = template.render();

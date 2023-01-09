@@ -1,7 +1,7 @@
 ----
 			<plugin>
 			    <groupId>de.mhus.mvn.plugin</groupId>
-				<version>{{project_version}}</version>
+				<version>±project_version±</version>
 				<artifactId>tmpl-maven-plugin</artifactId>
 				<configuration>
 					<files>

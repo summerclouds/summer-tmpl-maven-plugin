@@ -1,7 +1,7 @@
 ----
 			<plugin>
 			    <groupId>de.mhus.mvn.plugin</groupId>
-				<version>{{project_version}}</version>
+				<version>2.0.0</version>
 				<artifactId>tmpl-maven-plugin</artifactId>
 				<configuration>
 					<files>
@@ -14,7 +14,7 @@
 			</plugin>
 
 
-mvn de.mhus.mvn.plugin:tmpl-maven-plugin::tmpl 
+mvn de.mhus.mvn.plugin:tmpl-maven-plugin:2.0.0:tmpl 
 
 ----
 

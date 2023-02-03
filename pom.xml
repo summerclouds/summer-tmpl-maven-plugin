@@ -19,11 +19,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-        <groupId>de.mhus.lib</groupId>
-        <artifactId>mhus-oss</artifactId>
-        <version>7.0.0</version>
+        <groupId>org.summerclouds.common</groupId>
+        <version>0.1.0-SNAPSHOT</version>
+        <artifactId>common-parent</artifactId>
 	</parent>
-    <groupId>de.mhus.mvn.plugin</groupId>
+    <groupId>org.summerclouds.mvn.tmpl</groupId>
 	<version>2.1.0-SNAPSHOT</version>
 	<artifactId>tmpl-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
@@ -35,10 +35,28 @@
 
     <properties>
         <appendedResourcesDirectory>${basedir}/../../etc/appended-resources</appendedResourcesDirectory>
+        <summerclouds.common.version>0.1.0-SNAPSHOT</summerclouds.common.version>
+        <java.version>17</java.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.summerclouds.common</groupId>
+                <artifactId>common-bom</artifactId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>${summerclouds.common.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.summerclouds.common</groupId>
+            <artifactId>common-core-spring-boot-starter</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
@@ -84,14 +102,6 @@
          -->
         
         <!-- embedded -->
-        <dependency>
-        	<groupId>de.mhus.lib</groupId>
-        	<artifactId>lib-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.mhus.lib</groupId>
-            <artifactId>lib-core</artifactId>
-        </dependency>
 
 		<dependency>
 			<groupId>org.antlr</groupId>
@@ -100,78 +110,9 @@
 		</dependency>
 
     </dependencies>
-	<profiles>
-        <profile>
-            <id>release</id>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
-            <build>
-                <plugins>
-		            <plugin>
-		                <groupId>org.sonatype.plugins</groupId>
-		                <artifactId>nexus-staging-maven-plugin</artifactId>
-		                <version>1.6.13</version>
-		                <extensions>true</extensions>
-		                <configuration>
-		                    <serverId>ossrh</serverId>
-		                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-		                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-		                </configuration>
-		            </plugin>
-                    <plugin>
-                        <groupId>de.mhus.mvn.plugin</groupId>
-                        <artifactId>gpg-maven-plugin</artifactId>
-                        <version>${gpg.plugin}</version>
-                        <configuration>
-                            <passphrase>${gpg.passphrase}</passphrase>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-		            <plugin>
-		                <groupId>org.apache.maven.plugins</groupId>
-		                <artifactId>maven-source-plugin</artifactId>
-		                <version>${source.plugin}</version>
-		                <executions>
-		                    <execution>
-		                        <id>attach-sources</id>
-		                        <goals>
-		                            <goal>jar-no-fork</goal>
-		                        </goals>
-		                    </execution>
-		                </executions>
-		            </plugin>
-                </plugins>
-            </build>
-            
-        </profile>
-  	</profiles>
+
     <build>
         <plugins>
-            <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
-                <configuration>
-                    <source>11</source>
-                    <target>11</target>
-                </configuration>
-            </plugin>
             <plugin>
             <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
@@ -198,10 +139,6 @@
 		        </goals>
 		        <configuration>
 		        <artifactSet>
-		        <!-- 
-		          <includes>de.mhus.lib:*</includes>
-                  <includes>org.jtwig:*</includes>
-		         -->
 		         <excludes>
                     <exclude>org.apache.maven:*</exclude>
                     <exclude>org.apache.maven.plugin-tools:*</exclude>

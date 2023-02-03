@@ -13,27 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mhus.mvn.tmpl;
+package org.summerclouds.mvn.tmpl;
 
 import org.apache.maven.plugin.AbstractMojo;
+import org.summerclouds.common.core.log.LogFacade;
+import org.summerclouds.common.core.log.LogFactory;
 
-import de.mhus.lib.core.config.IConfig;
-import de.mhus.lib.core.logging.LogEngine;
-import de.mhus.lib.core.logging.LogFactory;
-
-public class MavenPloginLogFactory extends LogFactory {
+public class MavenPluginLogFactory extends LogFactory {
 
     private AbstractMojo owner;
 
-    public MavenPloginLogFactory(AbstractMojo owner) {
+    public MavenPluginLogFactory(AbstractMojo owner) {
         this.owner = owner;
     }
 
     @Override
-    public void init(IConfig config) throws Exception {}
-
-    @Override
-    public LogEngine createInstance(String name) {
+    public LogFacade create(String name) {
         return new MavenPluginLogEngine(owner, name);
     }
 }

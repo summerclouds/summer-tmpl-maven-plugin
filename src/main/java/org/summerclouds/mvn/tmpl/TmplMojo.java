@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mhus.mvn.tmpl;
+package org.summerclouds.mvn.tmpl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,14 +36,11 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.stringtemplate.v4.ST;
-
-import de.mhus.lib.core.MApi;
-import de.mhus.lib.core.MDate;
-import de.mhus.lib.core.MFile;
-import de.mhus.lib.core.MString;
-import de.mhus.lib.core.logging.Log;
-import de.mhus.lib.core.logging.Log.LEVEL;
-import de.mhus.lib.core.mapi.IApiInternal;
+import org.summerclouds.common.core.log.Log;
+import org.summerclouds.common.core.log.LogFactory;
+import org.summerclouds.common.core.tool.MDate;
+import org.summerclouds.common.core.tool.MFile;
+import org.summerclouds.common.core.tool.MString;
 
 @Mojo(
         name = "tmpl",
@@ -53,9 +50,10 @@ import de.mhus.lib.core.mapi.IApiInternal;
         threadSafe = true)
 public class TmplMojo extends AbstractMojo {
 
-    {
-        ((IApiInternal) MApi.get()).setLogFactory(new MavenPloginLogFactory(this));
-    }
+//    {
+//        LogFactory.
+//        ((IApiInternal) MApi.get()).setLogFactory(new MavenPluginLogFactory(this));
+//    }
 
     private Log log = Log.getLog(TmplMojo.class);
 
@@ -157,7 +155,7 @@ public class TmplMojo extends AbstractMojo {
             template.add("to_name", to.getName());
             template.add("now_datetime", MDate.toIsoDate(now));
             template.add("now_date", MDate.toIsoDateTime(now));
-            if (log.isLevelEnabled(LEVEL.DEBUG))
+            if (log.isLevelEnabled(Log.LEVEL.DEBUG))
             	log.d("tmpl attributes",template.getAttributes());
             String content = template.render();
             FileOutputStream os = new FileOutputStream(to);
@@ -165,7 +163,7 @@ public class TmplMojo extends AbstractMojo {
             os.close();
         } catch (Throwable e) {
         	log.w("Failed", e.toString());
-        	if (log.isLevelEnabled(LEVEL.DEBUG))
+        	if (log.isLevelEnabled(Log.LEVEL.DEBUG))
         		log.d("Exception", e);
         }
     }

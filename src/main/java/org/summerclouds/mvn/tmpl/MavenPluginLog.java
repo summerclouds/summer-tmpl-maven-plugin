@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mhus.mvn.tmpl;
+package org.summerclouds.mvn.tmpl;
 
 import org.apache.maven.plugin.AbstractMojo;
-
-import de.mhus.lib.core.logging.Log;
+import org.summerclouds.common.core.log.Log;
 
 public class MavenPluginLog extends Log {
 
     public MavenPluginLog(AbstractMojo owner) {
-        super(owner);
-        engine = new MavenPluginLogEngine(owner);
+        super(owner.getClass().getSimpleName());
+        facade = new MavenPluginLogEngine(owner);
     }
 }
